@@ -5,21 +5,31 @@ import { Injectable } from '@angular/core';
 })
 export class StorageService {
   private readonly PREFIX = 'hcl_erp_';
+  private memoryCache = new Map<string, any>();
 
   getItem<T>(key: string, defaultValue: T): T {
+    if (this.memoryCache.has(key)) {
+      return this.memoryCache.get(key) as T;
+    }
+
     try {
       const data = localStorage.getItem(this.PREFIX + key);
       if (data === null || data === undefined) {
+        this.memoryCache.set(key, defaultValue);
         return defaultValue;
       }
-      return JSON.parse(data) as T;
+      const parsed = JSON.parse(data) as T;
+      this.memoryCache.set(key, parsed);
+      return parsed;
     } catch (e) {
       console.error(`Error reading ${key} from localStorage:`, e);
+      this.memoryCache.set(key, defaultValue);
       return defaultValue;
     }
   }
 
   setItem<T>(key: string, value: T): void {
+    this.memoryCache.set(key, value);
     try {
       localStorage.setItem(this.PREFIX + key, JSON.stringify(value));
     } catch (e) {
@@ -28,6 +38,7 @@ export class StorageService {
   }
 
   removeItem(key: string): void {
+    this.memoryCache.delete(key);
     try {
       localStorage.removeItem(this.PREFIX + key);
     } catch (e) {
@@ -36,6 +47,7 @@ export class StorageService {
   }
 
   clearAll(): void {
+    this.memoryCache.clear();
     try {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -51,7 +63,6 @@ export class StorageService {
   }
 
   hasKey(key: string): boolean {
-    return localStorage.getItem(this.PREFIX + key) !== null;
+    return this.memoryCache.has(key) || localStorage.getItem(this.PREFIX + key) !== null;
   }
 }
-

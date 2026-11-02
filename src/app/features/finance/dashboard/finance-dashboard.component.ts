@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FinanceService } from '../../../core/services/finance.service';
@@ -15,6 +15,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
   selector: 'app-finance-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, StatCardComponent, ChartComponent, BadgeComponent, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="finance-page">
       <!-- Page Header -->
@@ -121,8 +122,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
           </div>
           <app-chart
             type="line"
-            [labels]="cashFlowChartData.labels"
-            [datasets]="cashFlowChartData.datasets"
+            [labels]="cashFlowChartData().labels"
+            [datasets]="cashFlowChartData().datasets"
             [height]="260"
           ></app-chart>
         </div>
@@ -138,8 +139,8 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
           </div>
           <app-chart
             type="doughnut"
-            [labels]="expenseDistChartData.labels"
-            [datasets]="expenseDistChartData.datasets"
+            [labels]="expenseDistChartData().labels"
+            [datasets]="expenseDistChartData().datasets"
             [height]="260"
           ></app-chart>
         </div>
@@ -197,7 +198,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let inv of pendingInvoicesList">
+                <tr *ngFor="let inv of pendingInvoicesList()">
                   <td><strong class="font-mono">{{ inv.invoiceNumber }}</strong></td>
                   <td>{{ inv.customerName }}</td>
                   <td>{{ inv.dueDate }}</td>
@@ -287,13 +288,13 @@ export class FinanceDashboardComponent {
     return ((net / rev) * 100).toFixed(1);
   }
 
-  get pendingInvoicesList() {
+  pendingInvoicesList = computed(() => {
     return this.invoiceService.invoices()
       .filter(i => i.outstandingAmount > 0)
       .slice(0, 5);
-  }
+  });
 
-  get cashFlowChartData() {
+  cashFlowChartData = computed(() => {
     const trends = this.financeService.getMonthlyFinancialTrends();
     return {
       labels: trends.labels,
@@ -316,9 +317,9 @@ export class FinanceDashboardComponent {
         }
       ]
     };
-  }
+  });
 
-  get expenseDistChartData() {
+  expenseDistChartData = computed(() => {
     const categoryTotals: { [cat: string]: number } = {};
     this.expenseService.expenses().forEach(e => {
       if (e.status === 'Paid') {
@@ -331,19 +332,10 @@ export class FinanceDashboardComponent {
       datasets: [
         {
           data: Object.values(categoryTotals),
-          backgroundColor: [
-            '#3b82f6',
-            '#10b981',
-            '#f59e0b',
-            '#ef4444',
-            '#8b5cf6',
-            '#ec4899',
-            '#06b6d4',
-            '#64748b'
-          ]
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b']
         }
       ]
     };
-  }
+  });
 }
 

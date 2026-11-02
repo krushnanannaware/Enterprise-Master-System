@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,7 @@ import { User, UserRole } from '../../../core/models/erp.model';
   selector: 'app-system-settings',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, IconComponent, ConfirmDialogComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="settings-page">
       <!-- Page Header -->
@@ -41,7 +42,7 @@ import { User, UserRole } from '../../../core/models/erp.model';
       <div class="grid-cols-4">
         <div class="setting-kpi">
           <span class="kpi-label">Active Users & Roles</span>
-          <span class="kpi-val text-primary">{{ auth.getUsers().length }} Accounts</span>
+          <span class="kpi-val text-primary">{{ usersList().length }} Accounts</span>
           <span class="kpi-sub">Role-Based Access Control</span>
         </div>
         <div class="setting-kpi">
@@ -84,7 +85,7 @@ import { User, UserRole } from '../../../core/models/erp.model';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let u of auth.getUsers()" [class.active-user-row]="u.role === auth.currentRole()">
+              <tr *ngFor="let u of usersList()" [class.active-user-row]="u.role === auth.currentRole()">
                 <td>
                   <div class="user-cell">
                     <img [src]="u.avatar || defaultAvatar" (error)="onAvatarError($event)" alt="Avatar" class="avatar-thumb" />
@@ -342,7 +343,27 @@ import { User, UserRole } from '../../../core/models/erp.model';
     }
   `]
 })
-export class SystemSettingsComponent {
+export class SystemSettingsComponent implements OnInit {
+  usersList = computed(() => this.auth.getUsers());
+  approximateStorageSize = 48;
+
+  ngOnInit(): void {
+    this.calculateStorageSize();
+  }
+
+  private calculateStorageSize(): void {
+    try {
+      let total = 0;
+      for (const x in localStorage) {
+        if (localStorage.hasOwnProperty(x)) {
+          total += (localStorage[x].length * 2);
+        }
+      }
+      this.approximateStorageSize = Math.round(total / 1024);
+    } catch {
+      this.approximateStorageSize = 48;
+    }
+  }
   auth = inject(AuthService);
   storage = inject(StorageService);
   employeeService = inject(EmployeeService);
@@ -363,20 +384,6 @@ export class SystemSettingsComponent {
     const target = event.target as HTMLImageElement;
     target.onerror = null;
     target.src = this.defaultAvatar;
-  }
-
-  get approximateStorageSize(): number {
-    try {
-      let total = 0;
-      for (const x in localStorage) {
-        if (localStorage.hasOwnProperty(x)) {
-          total += (localStorage[x].length * 2);
-        }
-      }
-      return Math.round(total / 1024);
-    } catch {
-      return 45;
-    }
   }
 
   switchToRole(role: UserRole): void {

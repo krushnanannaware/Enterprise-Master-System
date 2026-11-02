@@ -123,4 +123,8 @@ export class StockMovementsComponent {
   formatRefType(ref: string): string {
     return ref.replace(/_/g, ' ');
   }
+
+  trackById(index: number, item: StockMovement): string {
+    return item.id || item.movementId;
+  }
 }

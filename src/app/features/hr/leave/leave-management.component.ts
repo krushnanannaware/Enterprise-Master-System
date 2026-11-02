@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -404,15 +405,20 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
     }
   `]
 })
-export class LeaveManagementComponent implements OnInit {
+export class LeaveManagementComponent implements OnInit, OnDestroy {
+  private sub?: Subscription;
   leaveService = inject(LeaveService);
   employeeService = inject(EmployeeService);
   auth = inject(AuthService);
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
 
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
+
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.sub = this.route.queryParams.subscribe(params => {
       if (params['tab']) {
         this.activeTab = params['tab'] as any;
       }
@@ -576,5 +582,9 @@ export class LeaveManagementComponent implements OnInit {
     }
     this.showReviewModal = false;
     this.selectedLeave = null;
+  }
+
+  trackById(index: number, item: LeaveRequest): string {
+    return item.id || item.requestId;
   }
 }

@@ -34,7 +34,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 
       <!-- Department Cards Grid -->
       <div class="grid-cols-3">
-        <div class="erp-card dept-card" *ngFor="let dept of deptService.departments()">
+        <div class="erp-card dept-card" *ngFor="let dept of deptService.departments(); trackBy: trackById">
           <div class="dept-card-top">
             <div class="dept-badge">{{ dept.departmentId }}</div>
             <div class="dept-actions" *ngIf="canManage">
@@ -377,5 +377,8 @@ export class DepartmentListComponent {
       this.deptToDelete = null;
     }
   }
-}
 
+  trackById(index: number, item: Department): string {
+    return item.id || item.departmentId;
+  }
+}

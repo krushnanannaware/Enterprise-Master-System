@@ -6,7 +6,8 @@ import {
   OnDestroy,
   SimpleChanges,
   ViewChild,
-  AfterViewInit
+  AfterViewInit,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import Chart, { ChartConfiguration, ChartType } from 'chart.js/auto';
@@ -15,6 +16,7 @@ import Chart, { ChartConfiguration, ChartType } from 'chart.js/auto';
   selector: 'app-chart',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="chart-wrapper" [style.height.px]="height">
       <canvas #chartCanvas></canvas>
@@ -47,9 +49,19 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.chartInstance && (changes['labels'] || changes['datasets'] || changes['type'])) {
+    if (!this.chartInstance) return;
+
+    if (changes['type']) {
       this.chartInstance.destroy();
       this.renderChart();
+    } else if (changes['labels'] || changes['datasets'] || changes['options']) {
+      // Smooth update without tearing down the canvas context and recreation lag
+      this.chartInstance.data.labels = this.labels;
+      this.chartInstance.data.datasets = this.datasets;
+      if (changes['options'] && this.options) {
+        Object.assign(this.chartInstance.options, this.options);
+      }
+      this.chartInstance.update('none');
     }
   }
 
@@ -121,4 +133,3 @@ export class ChartComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
   }
 }
-

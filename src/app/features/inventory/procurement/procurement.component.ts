@@ -83,7 +83,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let po of filteredPOs">
+              <tr *ngFor="let po of filteredPOs; trackBy: trackById">
                 <td><strong class="font-mono">{{ po.poNumber }}</strong></td>
                 <td>{{ po.supplierName }}</td>
                 <td>{{ po.orderDate }}</td>
@@ -643,5 +643,9 @@ export class ProcurementComponent {
     } else {
       this.errorMessage = res.message;
     }
+  }
+
+  trackById(index: number, item: PurchaseOrder): string {
+    return item.id || item.poNumber;
   }
 }

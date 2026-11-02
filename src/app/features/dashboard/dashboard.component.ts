@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { EmployeeService } from '../../core/services/employee.service';
@@ -21,6 +21,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule, StatCardComponent, BadgeComponent, ChartComponent, IconComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="dashboard-page">
       <!-- Welcome Banner -->
@@ -209,8 +210,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="bar"
-              [labels]="monthlySalesData.labels"
-              [datasets]="monthlySalesData.datasets"
+              [labels]="monthlySalesData().labels"
+              [datasets]="monthlySalesData().datasets"
               [height]="250"
             ></app-chart>
           </div>
@@ -226,8 +227,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="line"
-              [labels]="revExpChartData.labels"
-              [datasets]="revExpChartData.datasets"
+              [labels]="revExpChartData().labels"
+              [datasets]="revExpChartData().datasets"
               [height]="250"
             ></app-chart>
           </div>
@@ -244,8 +245,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="doughnut"
-              [labels]="categoryChartData.labels"
-              [datasets]="categoryChartData.datasets"
+              [labels]="categoryChartData().labels"
+              [datasets]="categoryChartData().datasets"
               [height]="220"
             ></app-chart>
           </div>
@@ -260,8 +261,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="doughnut"
-              [labels]="departmentChartData.labels"
-              [datasets]="departmentChartData.datasets"
+              [labels]="departmentChartData().labels"
+              [datasets]="departmentChartData().datasets"
               [height]="220"
             ></app-chart>
           </div>
@@ -276,8 +277,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="pie"
-              [labels]="leaveStatusChartData.labels"
-              [datasets]="leaveStatusChartData.datasets"
+              [labels]="leaveStatusChartData().labels"
+              [datasets]="leaveStatusChartData().datasets"
               [height]="220"
             ></app-chart>
           </div>
@@ -292,8 +293,8 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
             </div>
             <app-chart
               type="doughnut"
-              [labels]="poStatusChartData.labels"
-              [datasets]="poStatusChartData.datasets"
+              [labels]="poStatusChartData().labels"
+              [datasets]="poStatusChartData().datasets"
               [height]="220"
             ></app-chart>
           </div>
@@ -648,7 +649,7 @@ export class DashboardComponent {
   }
 
   // 1. Monthly Sales Bar Chart
-  get monthlySalesData() {
+  monthlySalesData = computed(() => {
     return {
       labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
       datasets: [
@@ -660,10 +661,10 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 
   // 2. Revenue vs Expenses Line Chart
-  get revExpChartData() {
+  revExpChartData = computed(() => {
     const trends = this.financeService.getMonthlyFinancialTrends();
     return {
       labels: trends.labels,
@@ -686,10 +687,10 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 
   // 3. Inventory Category Doughnut Chart
-  get categoryChartData() {
+  categoryChartData = computed(() => {
     const counts: { [cat: string]: number } = {};
     this.inventoryService.products().forEach(p => {
       counts[p.category] = (counts[p.category] || 0) + 1;
@@ -703,10 +704,10 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 
   // 4. Employee Department Doughnut Chart
-  get departmentChartData() {
+  departmentChartData = computed(() => {
     const counts: { [dept: string]: number } = {};
     this.employeeService.employees().forEach(e => {
       if (e.employmentStatus !== 'Terminated') {
@@ -722,10 +723,10 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 
   // 5. Leave Request Status Chart
-  get leaveStatusChartData() {
+  leaveStatusChartData = computed(() => {
     const pending = this.leaveService.pendingLeavesCount();
     const approved = this.leaveService.approvedLeavesCount();
     const rejected = this.leaveService.rejectedLeavesCount();
@@ -738,10 +739,10 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 
   // 6. Purchase Order Status Chart
-  get poStatusChartData() {
+  poStatusChartData = computed(() => {
     const pos = this.procurementService.purchaseOrders();
     const counts: { [status: string]: number } = {};
     pos.forEach(p => {
@@ -756,6 +757,6 @@ export class DashboardComponent {
         }
       ]
     };
-  }
+  });
 }
 

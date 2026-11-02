@@ -124,7 +124,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let prod of pagedProducts">
+              <tr *ngFor="let prod of pagedProducts; trackBy: trackById">
                 <td>
                   <span class="sku-pill">{{ prod.sku }}</span>
                   <div class="id-sub">{{ prod.productId }}</div>
@@ -596,5 +596,8 @@ export class ProductListComponent {
       this.selectedProduct = null;
     }
   }
-}
 
+  trackById(index: number, item: Product): string {
+    return item.id || item.productId;
+  }
+}

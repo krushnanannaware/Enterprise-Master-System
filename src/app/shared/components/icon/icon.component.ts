@@ -1,9 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-icon',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   template: `
     <span class="inline-flex items-center justify-center align-middle icon-wrapper" [ngStyle]="{'width.px': size, 'height.px': size}">

@@ -53,7 +53,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 
       <!-- Suppliers Grid -->
       <div class="grid-cols-2">
-        <div class="erp-card supplier-card" *ngFor="let sup of filteredSuppliers">
+        <div class="erp-card supplier-card" *ngFor="let sup of filteredSuppliers; trackBy: trackById">
           <div class="sup-card-header">
             <div>
               <span class="sup-id-badge">{{ sup.supplierId }}</span>
@@ -515,5 +515,8 @@ export class SupplierListComponent {
       this.supplierToDelete = null;
     }
   }
-}
 
+  trackById(index: number, item: Supplier): string {
+    return item.id || item.supplierId;
+  }
+}

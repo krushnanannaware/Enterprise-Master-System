@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -103,7 +104,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let emp of pagedEmployees">
+              <tr *ngFor="let emp of pagedEmployees; trackBy: trackById">
                 <td>
                   <div class="emp-profile-cell">
                     <img
@@ -371,7 +372,8 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
     }
   `]
 })
-export class EmployeeListComponent implements OnInit {
+export class EmployeeListComponent implements OnInit, OnDestroy {
+  private sub?: Subscription;
   employeeService = inject(EmployeeService);
   deptService = inject(DepartmentService);
   auth = inject(AuthService);
@@ -379,8 +381,12 @@ export class EmployeeListComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
+
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.sub = this.route.queryParams.subscribe(params => {
       if ((params['action'] === 'register' || params['action'] === 'new') && this.canManage) {
         setTimeout(() => this.openAddModal(), 100);
       }
@@ -611,5 +617,8 @@ export class EmployeeListComponent implements OnInit {
     target.onerror = null;
     target.src = this.defaultAvatar;
   }
-}
 
+  trackById(index: number, item: Employee): string {
+    return item.id || item.employeeId;
+  }
+}

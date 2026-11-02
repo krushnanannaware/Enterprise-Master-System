@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -18,6 +19,7 @@ type ReportType =
 
 @Component({
   selector: 'app-reports',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, IconComponent, BadgeComponent],
   template: `
@@ -117,7 +119,7 @@ type ReportType =
 
         <!-- Summary KPI Metrics for the Report -->
         <div class="report-summary-grid" *ngIf="activeReportData?.summary">
-          <div class="rep-sum-card" *ngFor="let item of getSummaryEntries(activeReportData.summary)">
+          <div class="rep-sum-card" *ngFor="let item of summaryEntries">
             <span class="sum-key">{{ formatKey(item[0]) }}</span>
             <span class="sum-val">{{ formatVal(item[1]) }}</span>
           </div>
@@ -162,14 +164,14 @@ type ReportType =
           <table class="erp-table">
             <thead>
               <tr>
-                <th *ngFor="let col of getTableColumns(activeReportData.rows)">
+                <th *ngFor="let col of tableColumns">
                   {{ formatKey(col) }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let row of activeReportData.rows">
-                <td *ngFor="let col of getTableColumns(activeReportData.rows)">
+                <td *ngFor="let col of tableColumns">
                   <span *ngIf="isStatusField(col)">
                     <app-badge [text]="row[col]"></app-badge>
                   </span>
@@ -342,9 +344,17 @@ export class ReportsComponent implements OnInit {
   deptFilter = 'All';
 
   activeReportData: any = null;
+  tableColumns: string[] = [];
+  summaryEntries: [string, any][] = [];
+  private sub?: Subscription;
+  private cdr = inject(ChangeDetectorRef);
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.sub = this.route.queryParams.subscribe(params => {
       if (params['type']) {
         this.selectedReport = params['type'] as ReportType;
         this.refreshData();

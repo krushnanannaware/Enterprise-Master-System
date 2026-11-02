@@ -10,6 +10,7 @@ import { User, UserRole } from '../models/erp.model';
 export class AuthService {
   private readonly CURRENT_USER_KEY = 'auth_current_user';
   private readonly USERS_KEY = 'auth_users';
+  private cachedUsers: User[] | null = null;
 
   currentUser = signal<User | null>(null);
   isAuthenticated = computed(() => !!this.currentUser());
@@ -50,6 +51,9 @@ export class AuthService {
   }
 
   getUsers(): User[] {
+    if (this.cachedUsers) {
+      return this.cachedUsers;
+    }
     let users = this.storage.getItem<User[]>(this.USERS_KEY, this.demoData.getDemoUsers());
     const demoUsers = this.demoData.getDemoUsers();
     let hasChanges = false;
@@ -75,6 +79,7 @@ export class AuthService {
     if (hasChanges || !this.storage.hasKey(this.USERS_KEY)) {
       this.storage.setItem(this.USERS_KEY, users);
     }
+    this.cachedUsers = users;
     return users;
   }
 
@@ -87,11 +92,13 @@ export class AuthService {
     this.currentUser.set(updatedUser);
     this.storage.setItem(this.CURRENT_USER_KEY, updatedUser);
 
+    this.cachedUsers = null;
     const users = this.getUsers();
     const idx = users.findIndex(u => u.id === updatedUser.id || (updatedUser.employeeId && u.employeeId === updatedUser.employeeId));
     if (idx !== -1) {
       users[idx] = { ...users[idx], ...updates };
       this.storage.setItem(this.USERS_KEY, users);
+      this.cachedUsers = users;
     }
     return updatedUser;
   }
@@ -163,4 +170,3 @@ export class AuthService {
     return allowedRoles.includes(user.role);
   }
 }
-

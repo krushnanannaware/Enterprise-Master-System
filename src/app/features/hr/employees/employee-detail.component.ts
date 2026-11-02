@@ -1,4 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { EmployeeService } from '../../../core/services/employee.service';
@@ -10,6 +11,7 @@ import { DEFAULT_AVATAR } from '../../../core/constants/avatars';
 
 @Component({
   selector: 'app-employee-detail',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterModule, IconComponent, BadgeComponent],
   template: `
@@ -545,10 +547,16 @@ export class EmployeeDetailComponent implements OnInit {
 
   employee?: Employee;
   employeeLeaves: LeaveRequest[] = [];
+  private sub?: Subscription;
+  private cdr = inject(ChangeDetectorRef);
   defaultAvatar = DEFAULT_AVATAR;
 
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+  }
+
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.sub = this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.employee = this.employeeService.getEmployeeById(id);

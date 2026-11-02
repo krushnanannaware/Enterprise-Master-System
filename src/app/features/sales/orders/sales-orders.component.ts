@@ -126,7 +126,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let order of pagedOrders">
+              <tr *ngFor="let order of pagedOrders; trackBy: trackById">
                 <td><strong class="font-mono">{{ order.orderNumber }}</strong></td>
                 <td>
                   <strong>{{ order.customerName }}</strong>
@@ -762,5 +762,9 @@ export class SalesOrdersComponent {
 
   goToInvoice(invId?: string): void {
     this.router.navigate(['/sales/invoices']);
+  }
+
+  trackById(index: number, item: SalesOrder): string {
+    return item.id || item.orderNumber;
   }
 }

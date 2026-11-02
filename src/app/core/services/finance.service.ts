@@ -55,16 +55,8 @@ export class FinanceService {
       .reduce((sum, e) => sum + e.salary, 0);
   });
 
-  constructor(
-    private invoiceService: InvoiceService,
-    private salesService: SalesService,
-    private expenseService: ExpenseService,
-    private procurementService: ProcurementService,
-    private employeeService: EmployeeService
-  ) {}
-
-  // Computes monthly revenue & expenses for the last 6 months dynamically from actual transactions
-  getMonthlyFinancialTrends(): { labels: string[]; revenue: number[]; expenses: number[] } {
+  // Reactive computed monthly trends — only recalculates when invoices, expenses or POs actually change!
+  monthlyFinancialTrends = computed(() => {
     const months = ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
     const monthMap: { [key: string]: { rev: number; exp: number } } = {};
     months.forEach(m => {
@@ -122,6 +114,18 @@ export class FinanceService {
       revenue: months.map(m => monthMap[m].rev),
       expenses: months.map(m => monthMap[m].exp)
     };
+  });
+
+  constructor(
+    private invoiceService: InvoiceService,
+    private salesService: SalesService,
+    private expenseService: ExpenseService,
+    private procurementService: ProcurementService,
+    private employeeService: EmployeeService
+  ) {}
+
+  // Computes monthly revenue & expenses for the last 6 months dynamically from actual transactions
+  getMonthlyFinancialTrends(): { labels: string[]; revenue: number[]; expenses: number[] } {
+    return this.monthlyFinancialTrends();
   }
 }
-

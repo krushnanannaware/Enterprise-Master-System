@@ -100,7 +100,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let exp of pagedExpenses">
+              <tr *ngFor="let exp of pagedExpenses; trackBy: trackById">
                 <td><strong class="font-mono">{{ exp.expenseId }}</strong></td>
                 <td>
                   <strong>{{ exp.title }}</strong>
@@ -457,5 +457,8 @@ export class ExpenseListComponent {
       this.selectedExpense = null;
     }
   }
-}
 
+  trackById(index: number, item: Expense): string {
+    return item.id || item.expenseId;
+  }
+}

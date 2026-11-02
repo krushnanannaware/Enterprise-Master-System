@@ -109,7 +109,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let inv of pagedInvoices">
+              <tr *ngFor="let inv of pagedInvoices; trackBy: trackById">
                 <td><strong class="font-mono">{{ inv.invoiceNumber }}</strong></td>
                 <td>
                   <strong>{{ inv.customerName }}</strong>
@@ -701,5 +701,8 @@ export class InvoiceListComponent {
   printInvoice(): void {
     window.print();
   }
-}
 
+  trackById(index: number, item: Invoice): string {
+    return item.id || item.invoiceNumber;
+  }
+}
